@@ -10,11 +10,14 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
+import com.badlogic.gdx.Input.Keys
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
   val stage = new Stage
-
+  val moveDelta = 8
+  lazy val ship = new Ship(new Texture("art/ship3.png"))
+  
   class Ship(text: Texture) extends Image(text){
     override def draw(batch: SpriteBatch, alpha: Float): Unit = {
       validate();
@@ -58,6 +61,14 @@ class GameScreen extends Screen {
 
     batch.begin()
 
+    if(Gdx.input.isKeyPressed(Keys.LEFT)) 
+      ship addAction(Actions.moveBy(-moveDelta, 0, 0.2f))
+    if(Gdx.input.isKeyPressed(Keys.RIGHT)) 
+      ship addAction(Actions.moveBy(moveDelta, 0, 0.2f))
+    if(Gdx.input.isKeyPressed(Keys.UP)) 
+      ship addAction(Actions.moveBy(0, moveDelta, 0.2f))
+    if(Gdx.input.isKeyPressed(Keys.DOWN)) 
+      ship addAction(Actions.moveBy(0, -moveDelta, 0.2f))
     stage.act(delta);
     stage.draw;
     
@@ -65,14 +76,15 @@ class GameScreen extends Screen {
   }
 
   def resize(width: Int, height: Int) = {}
+  
   def show() = {
-    val ship = new Ship(new Texture("art/ship3.png"))
     stage addActor ship
     ship.setX(640);
     ship.setY(360)
     ship.setOrigin(ship.getWidth()/2, ship.getHeight()/2)
     ship rotate 45
   }
+  
   def hide() = { dispose }
   def pause() = {}
   def resume() = {}
