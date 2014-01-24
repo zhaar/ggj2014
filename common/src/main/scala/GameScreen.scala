@@ -66,12 +66,12 @@ class GameScreen extends Screen {
 
   def resize(width: Int, height: Int) = {}
   def show() = {
-    val ship = new Ship(new Texture("art/ship.png"))
+    val ship = new Ship(new Texture("art/ship3.png"))
     stage addActor ship
     ship.setX(640);
     ship.setY(360)
-    ship setScale 0.5f
     ship.setOrigin(ship.getWidth()/2, ship.getHeight()/2)
+    ship rotate 45
   }
   def hide() = { dispose }
   def pause() = {}
