@@ -21,6 +21,7 @@ class GameScreen extends Screen {
   var delay = 0f
   val maxProjectiles = 4
   lazy val ship = new Ship(new Texture("art/ship3.png"))
+  val waves = new Wave(1,1)
   
   def getRainbow : Color = {
     def sinValue(e : Float):Float = (Math.sin(elapsed + e).toFloat + 1f)/3f
@@ -73,6 +74,7 @@ class GameScreen extends Screen {
 
     stage.act(delta);
     stage.draw;
+    waves.draw(batch, stage, elapsed)
     
     batch.end()
   }
