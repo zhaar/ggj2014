@@ -16,27 +16,7 @@ import com.badlogic.gdx.graphics.VertexAttributes.Usage
 
 class Wave (amplitude: Float, waveLength: Float){
   
-  val w = 1280
-  val h = 720
-  val shader = new ShaderProgram(vertexShader, fragmentShader)
-  val waterShader = new ShaderProgram(vertexShader, fragmentShader2)
-  
-  val waterMesh = createQuad(-1, -1, 1, -1, 1, -0.3f, -1, -0.3f);
-  
-  val coloredTexture: Texture = buildTexture("art/water.png");
-  val edgeTexture: Texture = buildTexture("art/waterdisplacement.png")
-    
-  def buildTexture(filePath: String) : Texture = {
-    val texture = new Texture(filePath)
-    texture.setFilter(TextureFilter.Linear, TextureFilter.Linear)
-    texture
-  }
-  
-  def init() : Unit = {
-    edgeTexture.bind()
-  }
-  
-  val vertexShader = """
+    val vertexShader = """
       attribute vec4 a_position;    \n
       attribute vec2 a_texCoord0;\n
       uniform mat4 u_worldView;\n
@@ -74,6 +54,29 @@ class Wave (amplitude: Float, waveLength: Float){
       + "{                                            \n"
       + "  gl_FragColor = v_color * texture2D(u_texture, v_texCoords);\n"
       + "}"""
+    
+  val w = 1280
+  val h = 720
+  
+  val shader = new ShaderProgram(vertexShader, fragmentShader)
+  val waterShader = new ShaderProgram(vertexShader, fragmentShader2)
+  
+  val waterMesh = createQuad(-1, -1, 1, -1, 1, -0.3f, -1, -0.3f);
+  
+  val coloredTexture: Texture = buildTexture("art/water.png");
+  val edgeTexture: Texture = buildTexture("art/waterdisplacement.png")
+    
+  def buildTexture(filePath: String) : Texture = {
+    val texture = new Texture(filePath)
+    texture.setFilter(TextureFilter.Linear, TextureFilter.Linear)
+    texture
+  }
+  
+  def init() : Wave = {
+    edgeTexture.bind()
+    this
+  }
+  
   def angle(time: Float) : Float = {
     val angle = time * (2 * MathUtils.PI);
     if(angle > (2 * MathUtils.PI)) angle - (2 * MathUtils.PI) else angle;
