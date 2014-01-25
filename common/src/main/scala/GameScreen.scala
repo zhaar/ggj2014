@@ -56,7 +56,7 @@ class GameScreen extends Screen {
     spawnDelay = 2 + Math.random.toFloat * 2
     val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture("art/friendlyProjectile3.png"))
     bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
-    bullet addAction Actions.moveBy(-1280, 0, 3, Interpolation.sineIn);
+    bullet addAction Actions.moveBy(-1280, (1280/(-ship.getX() + bullet.getX())) * (ship.getY() - bullet.getY()), 3, Interpolation.sineIn);
     bullet
   }
   
