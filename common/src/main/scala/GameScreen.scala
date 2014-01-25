@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.graphics.g2d.Sprite
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
@@ -30,6 +31,9 @@ class GameScreen extends Screen {
   var shootDelay = 0f
   var spawnDelay = 0f;
   val maxProjectiles = 4
+  val maxTime = 60;
+  
+//  val spikes = new Sprite(new Texture("art/spikyspikes2.png"))
   
   val timer = new Label("", new LabelStyle(font, Color.WHITE))
   lazy val font = new BitmapFont(
@@ -73,21 +77,27 @@ class GameScreen extends Screen {
     scene
   }
   
+  
   def spawnBullet: Bullet = {
     spawnDelay = 2 + Math.random.toFloat * 2
     val rand = Math.floor(Math.random() * 5)
+    val initialPosition = new Vector2(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
     rand match{
-      case 0 => spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => ship.addAction(Actions.scaleTo(4, 4, 0.2f, Interpolation.bounce)))
-      case 1 => spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png", (ship:Ship) => ship.redModif = 0.2f)
-      case 2 => spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png", (ship:Ship) => ship.blueModif = 0.2f)
-      case 3 => spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png", (ship:Ship) => ship.greenModif = 0.2f)
-      case 4 => spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png", (ship:Ship) => ship.addAction(Actions.scaleTo(1, 1, 0.2f, Interpolation.bounce)))
+      case 0 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => ship.addAction(Actions.scaleTo(4, 4, 0.2f, Interpolation.bounce)))
+      case 1 => spawnUnit(initialPosition, new Vector2(-1280,1280 * (ship.getY() - initialPosition.y)/(initialPosition.x- ship.getX())),  "art/blackProjectile.png", (ship:Ship) => ship.redModif = 0.2f)
+      case 2 => {
+        val randomVect = new Vector2(1280,0);
+        randomVect.setAngle(MathUtils.random() * 360)
+        spawnUnit(new Vector2(640, 360), randomVect, "art/purpleProjectile.png", (ship:Ship) => ship.blueModif = 0.2f)
+      }
+      case 3 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/yellowProjectile.png", (ship:Ship) => ship.greenModif = 0.2f)
+      case 4 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/blueProjectile.png", (ship:Ship) => ship.addAction(Actions.scaleTo(1, 1, 0.2f, Interpolation.bounce)))
     }
   }
   
-  def spawnUnit(target: Vector2, filePath: String, f:Ship => Unit): Bullet = {
+  def spawnUnit(initialPosition: Vector2, target: Vector2, filePath: String, f:Ship => Unit): Bullet = {
     val bullet = new Bullet(f, new Texture(filePath))
-    bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
+    bullet setPosition(initialPosition.x, initialPosition.y)
     bullet addAction Actions.moveBy(target.x, target.y, 3, Interpolation.sineIn);
     bullet
   }
