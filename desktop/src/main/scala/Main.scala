@@ -9,5 +9,5 @@ object Main extends App {
     cfg.width = 1280
     cfg.useGL20 = true
     cfg.forceExit = false
-    new LwjglApplication(new ScrollerGame, cfg)
+    new LwjglApplication(new Azurey, cfg)
 }

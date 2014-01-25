@@ -11,7 +11,7 @@ class Ship(text: Texture) extends Image(text){
     def shoot : Projectile = {
       val proj = new Projectile(this.getProjectileTexture)
       proj setPosition(getX() - getOriginX(), getY() - getOriginY())
-      proj addAction(Actions.moveBy(1280, 0, 2))
+      proj addAction(Actions.moveBy(1000, 0, 2))
       proj
     }
     

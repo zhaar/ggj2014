@@ -21,7 +21,6 @@ class GameScreen extends Screen {
   var delay = 0f
   val maxProjectiles = 4
   lazy val ship = new Ship(new Texture("art/ship3.png"))
-  val waves = new Wave(1,1).init
   
   def getRainbow : Color = {
     def sinValue(e : Float):Float = (Math.sin(elapsed + e).toFloat + 1f)/3f
@@ -30,7 +29,7 @@ class GameScreen extends Screen {
   
   def checkBounds(ship: Ship) : Unit  = {
     if(ship.getX() < 30) ship.setX(30)
-    if(ship.getX() > 1250) ship setX 1350
+    if(ship.getX() > 1250) ship setX 1250
     if(ship.getY() > 690) ship setY 690
     if(ship.getY() < 30) ship setY 30
   }
@@ -40,7 +39,7 @@ class GameScreen extends Screen {
     for(i <- 0 until actors.size){
       val actor = actors get i
       actor match{
-        case proj: Projectile => if(actor.getActions().size == 0) actor.remove();
+        case proj: Projectile => if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())
         case ship: Ship => checkBounds(ship);
       }
     }
@@ -74,6 +73,8 @@ class GameScreen extends Screen {
 
     stage.act(delta);
     stage.draw;
+    checkScene(stage)
+//    waves.draw(batch, stage, elapsed)
     
     batch.end()
   }
@@ -90,5 +91,6 @@ class GameScreen extends Screen {
   def hide() = { dispose }
   def pause() = {}
   def resume() = {}
-  def dispose() = {}
+  def dispose() = { stage.dispose()
+    batch.dispose}
 }
