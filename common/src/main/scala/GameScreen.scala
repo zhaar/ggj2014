@@ -37,13 +37,15 @@ class GameScreen extends Screen {
   }
   
   def checkScene(scene: Stage): Stage = {
+    if(spawnDelay == 0 ) stage addActor(spawnBullet)
+
     val actors = scene.getActors();
     for(i <- 0 until actors.size){
       val actor = actors get i
       actor match{
-        case proj: Projectile => if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())
-        case ship: Ship => checkBounds(ship);
-        case _ => Unit
+        case p: Projectile => if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())
+        case s: Ship => checkBounds(s);
+        case b: Bullet => if(b contains(ship.getX(), ship.getY())) b.affectShip(ship)
       }
     }
     
@@ -52,7 +54,7 @@ class GameScreen extends Screen {
   
   def spawnBullet: Bullet = {
     spawnDelay = 2 + Math.random.toFloat * 2
-    val bullet = new Bullet((ship:Ship) => ship, new Texture("art/friendlyProjectile3.png"))
+    val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture("art/friendlyProjectile3.png"))
     bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
     bullet addAction Actions.moveBy(-1280, 0, 3, Interpolation.sineIn);
     bullet
@@ -73,8 +75,6 @@ class GameScreen extends Screen {
 
     batch.begin()
     
-    if(spawnDelay == 0 ) stage addActor(spawnBullet)
-
     if(Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) 
       ship addAction(Actions.moveBy(-moveDelta, 0, 0.1f))
     if(Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) 
