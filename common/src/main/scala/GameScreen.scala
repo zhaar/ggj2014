@@ -18,6 +18,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.MathUtils
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
@@ -99,7 +102,7 @@ class GameScreen extends Screen {
     shootDelay = updateDelay(shootDelay, delta);
     spawnDelay = updateDelay(spawnDelay, delta);
     val c = getRainbow
-    Gdx.gl.glClearColor(c.r * ship.redModif, c.g * ship.greenModif, c.b * ship.blueModif , 1)
+    Gdx.gl.glClearColor(1 - c.r * ship.redModif, 1 - c.g * ship.greenModif, 1 - c.b * ship.blueModif , 1)
     Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT)
 
     batch.begin()
@@ -116,7 +119,6 @@ class GameScreen extends Screen {
       shootDelay = 0.3f;
       stage addActor(ship.shoot)
     }
-    
 
     stage.act(delta);
     stage.draw;
