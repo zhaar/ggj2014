@@ -14,6 +14,10 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.utils.Pool.Poolable
 import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
@@ -23,7 +27,14 @@ class GameScreen extends Screen {
   var shootDelay = 0f
   var spawnDelay = 0f;
   val maxProjectiles = 4
+  
+  val timer = new Label("", new LabelStyle(font, Color.WHITE))
+  lazy val font = new BitmapFont(
+        Gdx.files.internal("ui/gameFont.fnt"),
+        new TextureRegion(new Texture("ui/gameFont.png")), false);
   lazy val ship = new Ship(new Texture("art/ship3.png"))
+  
+//  val timer = new Label();
   
   def getRainbow : Color = {
     def sinValue(e : Float):Float = (Math.sin(elapsed.toDouble + e).toFloat + 1f)/3f
@@ -51,8 +62,10 @@ class GameScreen extends Screen {
           if(b contains(ship.getX(), ship.getY())) b.affectShip(ship)
           if(b.getActions().size == 0) b.addAction(Actions.removeActor())
         }
+        case _ => Nil
       }
     }
+    timer setText((((elapsed * 100 ).toInt)/100f).toString)
     
     scene
   }
@@ -61,16 +74,16 @@ class GameScreen extends Screen {
     spawnDelay = 2 + Math.random.toFloat * 2
     val rand = Math.floor(Math.random() * 5)
     rand match{
-      case 0 => spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png")
-      case 1 => spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png")
-      case 2 => spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png")
-      case 3 => spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png")
-      case 4 => spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png")
+      case 0 => spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => ship.addAction(Actions.scaleTo(4, 4, 0.2f, Interpolation.bounce)))
+      case 1 => spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png", (ship:Ship) => ship.redModif = 0.2f)
+      case 2 => spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png", (ship:Ship) => ship.blueModif = 0.2f)
+      case 3 => spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png", (ship:Ship) => ship.greenModif = 0.2f)
+      case 4 => spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png", (ship:Ship) => ship.addAction(Actions.scaleTo(1, 1, 0.2f, Interpolation.bounce)))
     }
   }
   
-  def spawnUnit(target: Vector2, filePath: String): Bullet = {
-    val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture(filePath))
+  def spawnUnit(target: Vector2, filePath: String, f:Ship => Unit): Bullet = {
+    val bullet = new Bullet(f, new Texture(filePath))
     bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
     bullet addAction Actions.moveBy(target.x, target.y, 3, Interpolation.sineIn);
     bullet
@@ -120,6 +133,10 @@ class GameScreen extends Screen {
     ship.setX(640);
     ship.setY(360)
     ship.setOrigin(ship.getWidth()/2, ship.getHeight()/2)
+    
+    stage addActor timer
+    timer.setPosition( 10, 680)
+    timer.setHeight(20)
   }
   
   def hide() = { dispose }

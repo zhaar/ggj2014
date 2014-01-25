@@ -12,6 +12,8 @@ class Ship(text: Texture) extends Image(text){
   var greenModif = 1f
   var blueModif = 1f
   
+  def radius = getWidth()/2
+  
     def shoot : Projectile = {
       val proj = new Projectile(this.getProjectileTexture)
       proj setPosition(getX() - getOriginX(), getY() - getOriginY())
@@ -19,7 +21,7 @@ class Ship(text: Texture) extends Image(text){
       proj
     }
     
-    def getProjectileTexture : Texture = new Texture("art/projectile1.png")
+    def getProjectileTexture : Texture = new Texture("art/projectile2.png")
     
     override def draw(batch: SpriteBatch, alpha: Float): Unit = {
       validate();
