@@ -12,13 +12,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.utils.Pool.Poolable
+import com.badlogic.gdx.math.Interpolation
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
   val stage = new Stage
   val moveDelta = 8
   var elapsed = 0f
-  var delay = 0f
+  var shootDelay = 0f
+  var spawnDelay = 0f;
   val maxProjectiles = 4
   lazy val ship = new Ship(new Texture("art/ship3.png"))
   
@@ -41,21 +43,37 @@ class GameScreen extends Screen {
       actor match{
         case proj: Projectile => if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())
         case ship: Ship => checkBounds(ship);
+        case _ => Unit
       }
     }
     
     scene
   }
+  
+  def spawnBullet: Bullet = {
+    spawnDelay = 2 + Math.random.toFloat * 2
+    val bullet = new Bullet((ship:Ship) => ship, new Texture("art/friendlyProjectile3.png"))
+    bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
+    bullet addAction Actions.moveBy(-1280, 0, 3, Interpolation.sineIn);
+    bullet
+  }
+  
+  def updateDelay(variable: Float, delta: Float): Float = {
+    if(variable  > 0) variable - delta
+    else 0 
+  }
 
   def render(delta: Float) = {
     elapsed += delta
-    if(delay  > 0) delay -= delta
-    else delay = 0
+    shootDelay = updateDelay(shootDelay, delta);
+    spawnDelay = updateDelay(spawnDelay, delta);
     val c = getRainbow
     Gdx.gl.glClearColor(c.r, c.g, c.b , 1)
     Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT)
 
     batch.begin()
+    
+    if(spawnDelay == 0 ) stage addActor(spawnBullet)
 
     if(Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) 
       ship addAction(Actions.moveBy(-moveDelta, 0, 0.1f))
@@ -65,8 +83,8 @@ class GameScreen extends Screen {
       ship addAction(Actions.moveBy(0, moveDelta, 0.2f))
     if(Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)) 
       ship addAction(Actions.moveBy(0, -moveDelta, 0.2f))
-    if(Gdx.input.isKeyPressed(Keys.SPACE) && delay == 0){
-      delay = 0.3f;
+    if(Gdx.input.isKeyPressed(Keys.SPACE) && shootDelay == 0){
+      shootDelay = 0.3f;
       stage addActor(ship.shoot)
     }
     
