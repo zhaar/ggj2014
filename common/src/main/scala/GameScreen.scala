@@ -61,16 +61,12 @@ class GameScreen extends Screen {
     spawnDelay = 2 + Math.random.toFloat * 2
     val rand = Math.floor(Math.random() * 5)
     rand match{
-      case 0 => stage addActor spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png")
-      case 1 => stage addActor spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png")
-      case 2 => stage addActor spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png")
-      case 3 => stage addActor spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png")
-      case 4 => stage addActor spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png")
+      case 0 => spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png")
+      case 1 => spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png")
+      case 2 => spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png")
+      case 3 => spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png")
+      case 4 => spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png")
     }
-    val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture("art/friendlyProjectile3.png"))
-    bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
-    bullet addAction Actions.moveBy(-1280, 0, 3, Interpolation.sineIn);
-    bullet
   }
   
   def spawnUnit(target: Vector2, filePath: String): Bullet = {
