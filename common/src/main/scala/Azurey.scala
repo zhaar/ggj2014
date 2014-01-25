@@ -7,6 +7,6 @@ import com.badlogic.gdx.Game
 class Azurey extends Game {
 
 	override def create() {
-		Azurey.this.setScreen(new GameScreen)
+		Azurey.this.setScreen(new GameScreen(this))
 	}
 }

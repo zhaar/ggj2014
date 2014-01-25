@@ -23,7 +23,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.graphics.g2d.Sprite
 
-class GameScreen extends Screen {
+class GameScreen(game: Azurey) extends Screen {
   val batch = new SpriteBatch
   val stage = new Stage
   val moveDelta = 8f
@@ -33,7 +33,6 @@ class GameScreen extends Screen {
   val maxProjectiles = 4
   val maxTime = 60;
   
-//  val spikes = new Sprite(new Texture("art/spikyspikes2.png"))
   
   val timer = new Label("", new LabelStyle(font, Color.WHITE))
   lazy val font = new BitmapFont(
@@ -41,7 +40,6 @@ class GameScreen extends Screen {
         new TextureRegion(new Texture("ui/gameFont.png")), false);
   lazy val ship = new Ship(new Texture("art/ship3.png"))
   
-//  val timer = new Label();
   
   def getRainbow : Color = {
     def sinValue(e : Float):Float = (Math.sin(elapsed.toDouble + e).toFloat + 1f)/3f
@@ -56,7 +54,10 @@ class GameScreen extends Screen {
   }
   
   def checkScene(scene: Stage): Stage = {
-    if(spawnDelay == 0 ) stage addActor(spawnBullet)
+    if(spawnDelay == 0 ){
+      spawnDelay = 1/(0.2f*elapsed + 4) * 16 
+      spawnMultipleBullets(MathUtils.ceil((0.2f*elapsed + 4)).toInt)
+    }
 
     val actors = scene.getActors();
     for(i <- 0 until actors.size){
@@ -77,13 +78,17 @@ class GameScreen extends Screen {
     scene
   }
   
+  def spawnMultipleBullets(amount :Int ) = {
+    for(i <- 0 until amount)
+      stage addActor(spawnBullet)
+  }
+  
   
   def spawnBullet: Bullet = {
-    spawnDelay = 2 + Math.random.toFloat * 2
     val rand = Math.floor(Math.random() * 5)
     val initialPosition = new Vector2(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
     rand match{
-      case 0 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => ship.addAction(Actions.scaleTo(4, 4, 0.2f, Interpolation.bounce)))
+      case 0 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => ship.addAction(Actions.moveTo(640, 360, 0.2f, Interpolation.exp10)))
       case 1 => spawnUnit(initialPosition, new Vector2(-1280,1280 * (ship.getY() - initialPosition.y)/(initialPosition.x- ship.getX())),  "art/blackProjectile.png", (ship:Ship) => ship.redModif = 0.2f)
       case 2 => {
         val randomVect = new Vector2(1280,0);
@@ -98,7 +103,7 @@ class GameScreen extends Screen {
   def spawnUnit(initialPosition: Vector2, target: Vector2, filePath: String, f:Ship => Unit): Bullet = {
     val bullet = new Bullet(f, new Texture(filePath))
     bullet setPosition(initialPosition.x, initialPosition.y)
-    bullet addAction Actions.moveBy(target.x, target.y, 3, Interpolation.sineIn);
+    bullet addAction Actions.moveBy(target.x, target.y, 3, Interpolation.linear);
     bullet
   }
   
@@ -141,6 +146,7 @@ class GameScreen extends Screen {
   def resize(width: Int, height: Int) = {}
   
   def show() = {
+    Gdx.audio.newMusic(Gdx.files.internal("art/17 - Recurring Conflict.mp3")).play()
     stage addActor ship
     ship.setX(640);
     ship.setY(360)
