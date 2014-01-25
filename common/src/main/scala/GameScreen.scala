@@ -13,11 +13,12 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.utils.Pool.Poolable
 import com.badlogic.gdx.math.Interpolation
+import com.badlogic.gdx.math.Vector2
 
 class GameScreen extends Screen {
   val batch = new SpriteBatch
   val stage = new Stage
-  val moveDelta = 8
+  val moveDelta = 8f
   var elapsed = 0f
   var shootDelay = 0f
   var spawnDelay = 0f;
@@ -25,7 +26,7 @@ class GameScreen extends Screen {
   lazy val ship = new Ship(new Texture("art/ship3.png"))
   
   def getRainbow : Color = {
-    def sinValue(e : Float):Float = (Math.sin(elapsed + e).toFloat + 1f)/3f
+    def sinValue(e : Float):Float = (Math.sin(elapsed.toDouble + e).toFloat + 1f)/3f
     new Color(sinValue(-(Math.PI).toFloat * 2f / 3f), sinValue(Math.PI.toFloat * 2f / 3f), sinValue(0f), 1)
   }
   
@@ -43,9 +44,13 @@ class GameScreen extends Screen {
     for(i <- 0 until actors.size){
       val actor = actors get i
       actor match{
-        case p: Projectile => if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())
+        case p: Projectile => {
+          if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())}
         case s: Ship => checkBounds(s);
-        case b: Bullet => if(b contains(ship.getX(), ship.getY())) b.affectShip(ship)
+        case b: Bullet => {
+          if(b contains(ship.getX(), ship.getY())) b.affectShip(ship)
+          if(b.getActions().size == 0) b.addAction(Actions.removeActor())
+        }
       }
     }
     
@@ -54,9 +59,24 @@ class GameScreen extends Screen {
   
   def spawnBullet: Bullet = {
     spawnDelay = 2 + Math.random.toFloat * 2
+    val rand = Math.floor(Math.random() * 5)
+    rand match{
+      case 0 => stage addActor spawnUnit(new Vector2(-1280,0), "art/friendlyProjectile3.png")
+      case 1 => stage addActor spawnUnit(new Vector2(-1280,0), "art/blackProjectile.png")
+      case 2 => stage addActor spawnUnit(new Vector2(-1280,0), "art/purpleProjectile.png")
+      case 3 => stage addActor spawnUnit(new Vector2(-1280,0), "art/yellowProjectile.png")
+      case 4 => stage addActor spawnUnit(new Vector2(-1280,0), "art/blueProjectile.png")
+    }
     val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture("art/friendlyProjectile3.png"))
     bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
-    bullet addAction Actions.moveBy(-1280, (1280/(-ship.getX() + bullet.getX())) * (ship.getY() - bullet.getY()), 3, Interpolation.sineIn);
+    bullet addAction Actions.moveBy(-1280, 0, 3, Interpolation.sineIn);
+    bullet
+  }
+  
+  def spawnUnit(target: Vector2, filePath: String): Bullet = {
+    val bullet = new Bullet((ship:Ship) => ship.setScale(4), new Texture(filePath))
+    bullet setPosition(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
+    bullet addAction Actions.moveBy(target.x, target.y, 3, Interpolation.sineIn);
     bullet
   }
   
@@ -70,7 +90,7 @@ class GameScreen extends Screen {
     shootDelay = updateDelay(shootDelay, delta);
     spawnDelay = updateDelay(spawnDelay, delta);
     val c = getRainbow
-    Gdx.gl.glClearColor(c.r, c.g, c.b , 1)
+    Gdx.gl.glClearColor(c.r * ship.redModif, c.g * ship.greenModif, c.b * ship.blueModif , 1)
     Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT)
 
     batch.begin()
