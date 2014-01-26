@@ -11,7 +11,12 @@ class Ship(text: Texture) extends Image(text){
   var redModif = 1f
   var greenModif = 1f
   var blueModif = 1f
+  var speed = 10f
   
+  def increaseSpeed() = speed = Math.min(speed * 4/3, 25)
+  def decreseSpeed() = speed = Math.max(speed * 2/3, 5)
+
+  def resetSpeed() = speed = 10f
   def radius = getWidth()/2
   
     def shoot : Projectile = {
