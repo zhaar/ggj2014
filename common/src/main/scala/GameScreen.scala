@@ -174,6 +174,7 @@ class GameScreen(game: Azurey) extends Screen {
           randomVect.setAngle(MathUtils.random() * 360)
           spawnUnit(new Vector2(640, 360), randomVect, "art/purpleProjectile.png", (ship:Ship) => { 
             ship.blueModif = 0.2f
+            spawnMultipleBullets(level*2);
           })}
         case 3 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/yellowProjectile.png", (ship:Ship) =>{
           Gdx.audio.newSound(Gdx.files.internal("art/sound/Speed_down2.wav")).play()
