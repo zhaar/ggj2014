@@ -1,29 +1,26 @@
 package us.zhaar.ggj
 
+import org.dischan.randomBS.CustomAssetManager
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Screen
-import com.badlogic.gdx.graphics.GL10
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.badlogic.gdx.scenes.scene2d.actions.Actions
 import com.badlogic.gdx.Input.Keys
-import com.badlogic.gdx.utils.Pool.Poolable
-import com.badlogic.gdx.math.Interpolation
-import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.Screen
+import com.badlogic.gdx.assets.loaders.TextureLoader.TextureParameter
+import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL10
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType
+import com.badlogic.gdx.math.Interpolation
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.graphics.g2d.Sprite
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.scenes.scene2d.Actor
-import com.badlogic.gdx.scenes.scene2d.Action
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.actions.Actions
+import com.badlogic.gdx.scenes.scene2d.ui.Image
+import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
+import com.badlogic.gdx.graphics.Texture.TextureFilter
 
 class GameScreen(game: Azurey) extends Screen {
   val batch = new SpriteBatch
@@ -31,6 +28,7 @@ class GameScreen(game: Azurey) extends Screen {
   val maxProjectiles = 4
   val maxTime = 60;
   val moveDelta = 8f
+  val manager = new CustomAssetManager(getParameters)
   /*
    * lol variables
    */
@@ -43,13 +41,18 @@ class GameScreen(game: Azurey) extends Screen {
   var level = 0
   def currentLevel = MathUtils.floor(elapsed/10)
   
-  
+  def getParameters()= {
+    val param = new TextureParameter();
+    param.minFilter = TextureFilter.Linear;
+    param.genMipMaps = true;
+    param
+  }
   
   val timer = new Label("", new LabelStyle(font, Color.WHITE))
   lazy val font = new BitmapFont(
         Gdx.files.internal("ui/gameFont.fnt"),
-        new TextureRegion(new Texture("ui/gameFont.png")), false);
-  lazy val ship = new Ship(new Texture("art/ship3.png"))
+        new TextureRegion(manager.buildTexture("ui/gameFont.png")), false);
+  lazy val ship = new Ship(manager.buildTexture("art/ship3.png"))
     
   def getSpeed = {
     if(accelerated)moveDelta *2
@@ -95,9 +98,8 @@ class GameScreen(game: Azurey) extends Screen {
         case _ => Nil
       }
     }
-    timer setText((((elapsed * 100 ).toInt)/100f).toString)
-    if(level < currentLevel){
-      println("nextLevel")
+    if(!pauseGame)timer setText((((elapsed * 100 ).toInt)/100f).toString)
+    if(level != currentLevel){
       level = currentLevel
       nextLevel(level)
     }
@@ -107,10 +109,11 @@ class GameScreen(game: Azurey) extends Screen {
   
   def nextLevel(level: Int){
     val array = new Array(level)
-    for(i <- 0 until level){
-      val arrow = new Image(new Texture("art/" + selectArrow))
+    Gdx.audio.newSound(Gdx.files.internal("art/sound/Next_level.wav")).play()
+    for(i <- 0 until level+1){
+      val arrow = new Image(manager.buildTexture("art/" + selectArrow))
       arrow.setPosition(1280, 0)
-      arrow.addAction(Actions.sequence(Actions.delay(i, Actions.moveBy(-1500, 0, 1 - 1/(1+i))), Actions.removeActor()))
+      arrow.addAction(Actions.sequence(Actions.delay(i/2, Actions.moveBy(-1500, 0,1)), Actions.removeActor()))
       stage.addActor(arrow)
     }
   }
@@ -145,7 +148,7 @@ class GameScreen(game: Azurey) extends Screen {
     for(a <- 0 until actors.size){
       actors.get(a).clearActions()
     }
-    val score = elapsed * bulletSpeed
+    val score = elapsed / bulletSpeed
     val scoreLabel = new Label("score ( time * speed) :\n " + score, new LabelStyle(font, Color.BLACK))
     scoreLabel.setPosition(1280/2 - scoreLabel.getWidth()/2, 720/2 - scoreLabel.getHeight()/2)
     stage addActor(scoreLabel)
@@ -181,6 +184,9 @@ class GameScreen(game: Azurey) extends Screen {
     else 0 
   }
   
+  /*
+   * lol fuck my life
+   */
   def restartGame() = {
     stage.clear()
     stage.addActor(ship)
@@ -191,6 +197,7 @@ class GameScreen(game: Azurey) extends Screen {
     shootDelay = 0f
     spawnDelay = 0f
     bulletSpeed = 2f
+    level = 0;
   }
 
   def render(delta: Float) = {
@@ -232,7 +239,9 @@ class GameScreen(game: Azurey) extends Screen {
   def resize(width: Int, height: Int) = {}
   
   def show() = {
-    Gdx.audio.newMusic(Gdx.files.internal("art/16 - Anna.mp3")).play()
+    val mainMusic = Gdx.audio.newMusic(Gdx.files.internal("art/16 - Anna.mp3"))
+    mainMusic.setVolume(0.5f)
+    mainMusic.play()
     stage addActor ship
     
     stage addActor timer
