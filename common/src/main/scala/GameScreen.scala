@@ -28,9 +28,9 @@ import com.badlogic.gdx.scenes.scene2d.Action
 class GameScreen(game: Azurey) extends Screen {
   val batch = new SpriteBatch
   val stage = new Stage
-  val moveDelta = 8f
   val maxProjectiles = 4
   val maxTime = 60;
+  val moveDelta = 8f
   /*
    * lol variables
    */
@@ -38,6 +38,8 @@ class GameScreen(game: Azurey) extends Screen {
   var shootDelay = 0f
   var spawnDelay = 0f
   var bulletSpeed = 2f
+  var pauseGame = false
+  var accelerated = false
   
   val timer = new Label("", new LabelStyle(font, Color.WHITE))
   lazy val font = new BitmapFont(
@@ -45,6 +47,10 @@ class GameScreen(game: Azurey) extends Screen {
         new TextureRegion(new Texture("ui/gameFont.png")), false);
   lazy val ship = new Ship(new Texture("art/ship3.png"))
     
+  def getSpeed = {
+    if(accelerated)moveDelta *2
+    else moveDelta
+  }
   
   def getRainbow : Color = {
     def sinValue(e : Float):Float = (Math.sin(elapsed.toDouble + e).toFloat + 1f)/3f
@@ -65,7 +71,7 @@ class GameScreen(game: Azurey) extends Screen {
    * desperate attempt to control side effects
    */
   def checkScene(scene: Stage): Stage = {
-    if(spawnDelay == 0 ){
+    if(spawnDelay == 0 && !pauseGame){
       spawnDelay = 1/(0.2f*elapsed + 2.1f) * 4.41f 
       spawnMultipleBullets(MathUtils.ceil((0.2f*elapsed + 4)).toInt)
     }
@@ -99,15 +105,18 @@ class GameScreen(game: Azurey) extends Screen {
   
   
   /*
-   * ALL THOSE SIDE EFFECTS F
+   * ALL THOSE SIDE EFFECTS FKKK
    */
   def end(stage:Stage) : Unit = {
     val actors = stage.getActors();
     for(a <- 0 until actors.size){
       actors.get(a).clearActions()
     }
-    
-    stage addActor(new Label(timer.getText(), new LabelStyle(font, Color.WHITE)))
+    val score = elapsed * bulletSpeed
+    val scoreLabel = new Label("score ( time * speed) :\n " + score, new LabelStyle(font, Color.BLACK))
+    scoreLabel.setPosition(1280/2 - scoreLabel.getWidth()/2, 720/2 - scoreLabel.getHeight()/2)
+    stage addActor(scoreLabel)
+    pauseGame = true;
   }
   
   def spawnBullet: Bullet = {
@@ -139,6 +148,18 @@ class GameScreen(game: Azurey) extends Screen {
     if(variable  > 0) variable - delta
     else 0 
   }
+  
+  def restartGame() = {
+    stage.clear()
+    stage.addActor(ship)
+    stage addActor timer
+    timer.setPosition( 10, 680)
+    timer.setHeight(20)
+    elapsed = 0f
+    shootDelay = 0f
+    spawnDelay = 0f
+    bulletSpeed = 2f
+  }
 
   def render(delta: Float) = {
     elapsed += delta
@@ -151,15 +172,20 @@ class GameScreen(game: Azurey) extends Screen {
     batch.begin()
     
     if(Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) 
-      ship addAction(Actions.moveBy(-moveDelta, 0, 0.1f))
+      ship addAction(Actions.moveBy(-getSpeed, 0, 0.1f))
     if(Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) 
-      ship addAction(Actions.moveBy(moveDelta, 0, 0.1f))
+      ship addAction(Actions.moveBy(getSpeed, 0, 0.1f))
     if(Gdx.input.isKeyPressed(Keys.UP) || Gdx.input.isKeyPressed(Keys.W)) 
-      ship addAction(Actions.moveBy(0, moveDelta, 0.2f))
+      ship addAction(Actions.moveBy(0, getSpeed, 0.2f))
     if(Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)) 
-      ship addAction(Actions.moveBy(0, -moveDelta, 0.2f))
+      ship addAction(Actions.moveBy(0, -getSpeed, 0.2f))
     if(Gdx.input.isKeyPressed(Keys.SPACE) && shootDelay == 0){
       shootDelay = 0.3f;
+      if(pauseGame){
+        restartGame
+        pauseGame = false;
+      }
+      if(Gdx.input.isKeyPressed(Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Keys.SHIFT_RIGHT)) accelerated = true else accelerated = false
 //      stage addActor(ship.shoot)
     }
 
@@ -176,9 +202,6 @@ class GameScreen(game: Azurey) extends Screen {
   def show() = {
     Gdx.audio.newMusic(Gdx.files.internal("art/16 - Anna.mp3")).play()
     stage addActor ship
-    ship.setX(640);
-    ship.setY(360)
-    ship.setOrigin(ship.getWidth()/2, ship.getHeight()/2)
     
     stage addActor timer
     timer.setPosition( 10, 680)
