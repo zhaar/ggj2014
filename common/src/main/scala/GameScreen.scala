@@ -102,7 +102,7 @@ class GameScreen(game: Azurey) extends Screen {
         if(!pauseGame)timer setText((((elapsed * 100 ).toInt)/100f).toString)
         if(level != currentLevel){
           level = currentLevel
-//          nextLevel(level)
+          nextLevel(level)
         }
 
         scene
@@ -110,7 +110,7 @@ class GameScreen(game: Azurey) extends Screen {
 
     def nextLevel(level: Int){
       val array = new Array(level)
-      bulletSpeed = bulletSpeed *2/3f
+      bulletSpeed = bulletSpeed *4/5f
       Gdx.audio.newSound(Gdx.files.internal("art/sound/Next_level2.wav")).play()
 
       def selectArrow():String = {
@@ -122,14 +122,14 @@ class GameScreen(game: Azurey) extends Screen {
               case 3 => "arrLime.png"
               case 4 => "arrLightBlue.png"
               case 5 => "arrPurple.png"
-              case 6 => "arrgreen.png"
+              case 6 => "arrGreen.png"
           }
       }
 
-      for(i <- 0 until level+1){
+      for(i <- 0 until level){
         val arrow = new Image(manager.buildTexture("art/" + selectArrow))
         arrow.setPosition(1280, 0)
-        arrow.addAction(Actions.sequence(Actions.delay(i/2, Actions.moveBy(-1500, 0,1)), Actions.removeActor()))
+        arrow.addAction(Actions.sequence(Actions.delay(i*0.3f, Actions.moveBy(-1500, 0,bulletSpeed)), Actions.removeActor()))
         stage.addActor(arrow)
       }
     }
@@ -154,7 +154,7 @@ class GameScreen(game: Azurey) extends Screen {
         actors.get(a).clearActions()
       }
       val score = elapsed / bulletSpeed
-          val scoreLabel = new Label("time :\n " +elapsed, new LabelStyle(font, Color.BLACK))
+          val scoreLabel = new Label("time :\n " +elapsed + "\n press space to restart", new LabelStyle(font, Color.BLACK))
       scoreLabel.setAlignment(Align.center)
       scoreLabel.setPosition(1280/2 - scoreLabel.getWidth()/2, 720/2 - scoreLabel.getHeight()/2)
       stage addActor(scoreLabel)
@@ -165,18 +165,29 @@ class GameScreen(game: Azurey) extends Screen {
             val initialPosition = new Vector2(640 + Math.random.toFloat * 640, Math.random.toFloat * 720)
         rand match{
         case 0 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/friendlyProjectile3.png", (ship:Ship) => {
+          Gdx.audio.newSound(Gdx.files.internal("art/sound/Teleport2.wav")).play
           ship.addAction(Actions.moveTo(640, 360, 0.2f, Interpolation.exp10))
-          Gdx.audio.newSound(Gdx.files.internal("art/sound/Teleport2.wav")).play()
+          ship.blueModif = 1f
+          ship.greenModif = 0.8f
+          ship.redModif = 0.1f
         })
-        case 1 => spawnUnit(initialPosition, new Vector2(-1280,1280 * (ship.getY() - initialPosition.y)/(initialPosition.x- ship.getX())),  "art/blackProjectile.png", (ship:Ship) => end(stage))
+        case 1 => spawnUnit(initialPosition, new Vector2(-1280,1280 * (ship.getY() - initialPosition.y)/(initialPosition.x- ship.getX())),  "art/blackProjectile.png", (ship:Ship) => {
+          ship.blueModif *= 0.1f
+          ship.greenModif *= 0.1f
+          ship.redModif *= 0.1f
+          end(stage)
+        })
         case 2 => {
           val randomVect = new Vector2(1280,0);
           randomVect.setAngle(MathUtils.random() * 360)
           spawnUnit(new Vector2(640, 360), randomVect, "art/purpleProjectile.png", (ship:Ship) => { 
             ship.blueModif = 0.2f
-            spawnMultipleBullets(level*2);
+            spawnMultipleBullets((level+2)^2);
           })}
         case 3 => spawnUnit(initialPosition, new Vector2(-1280,0), "art/yellowProjectile.png", (ship:Ship) =>{
+          ship.blueModif = 1f
+          ship.greenModif = 0.5f
+          ship.redModif = 0.5f
           Gdx.audio.newSound(Gdx.files.internal("art/sound/Speed_down2.wav")).play()
           ship.decreseSpeed
         })
@@ -221,7 +232,7 @@ class GameScreen(game: Azurey) extends Screen {
       }
 
       def render(delta: Float) = {
-          elapsed += delta
+          if(!pauseGame)elapsed += delta
               shootDelay = updateDelay(shootDelay, delta);
           spawnDelay = updateDelay(spawnDelay, delta);
           val c = getRainbow

@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.math.MathUtils
 
 class Bullet(transform : Ship => Unit, texture:Texture) extends Image(texture){
-
+  
   def affectShip(ship: Ship): Unit = transform(ship)
   
   def contains(x: Float, y: Float): Boolean = {
