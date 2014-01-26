@@ -81,12 +81,12 @@ class GameScreen(game: Azurey) extends Screen {
       val actor = actors get i
       actor match{
         case p: Projectile => {
-          if(actor.getActions().size == 0) actor.addAction(Actions.removeActor())}
+          if(actor.getActions().size == 0 ) actor.addAction(Actions.removeActor())}
         case s: Ship => checkBounds(s);
         case b: Bullet => {
-          if(b contains(ship.getX(), ship.getY())) b.affectShip(ship)
+          if(b.contains(ship.getX(), ship.getY()) && !pauseGame) b.affectShip(ship)
           b.setScale(1+getWave(1, 2.1f, -.5f, elapsed))
-          if(b.getActions().size == 0) b.addAction(Actions.removeActor())
+          if(b.getActions().size == 0 && !pauseGame) b.addAction(Actions.removeActor())
         }
         case _ => Nil
       }
@@ -108,6 +108,7 @@ class GameScreen(game: Azurey) extends Screen {
    * ALL THOSE SIDE EFFECTS FKKK
    */
   def end(stage:Stage) : Unit = {
+        pauseGame = true;
     val actors = stage.getActors();
     for(a <- 0 until actors.size){
       actors.get(a).clearActions()
@@ -116,7 +117,6 @@ class GameScreen(game: Azurey) extends Screen {
     val scoreLabel = new Label("score ( time * speed) :\n " + score, new LabelStyle(font, Color.BLACK))
     scoreLabel.setPosition(1280/2 - scoreLabel.getWidth()/2, 720/2 - scoreLabel.getHeight()/2)
     stage addActor(scoreLabel)
-    pauseGame = true;
   }
   
   def spawnBullet: Bullet = {
@@ -170,7 +170,7 @@ class GameScreen(game: Azurey) extends Screen {
     Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT)
 
     batch.begin()
-    
+    if(!pauseGame){
     if(Gdx.input.isKeyPressed(Keys.LEFT) || Gdx.input.isKeyPressed(Keys.A)) 
       ship addAction(Actions.moveBy(-getSpeed, 0, 0.1f))
     if(Gdx.input.isKeyPressed(Keys.RIGHT) || Gdx.input.isKeyPressed(Keys.D)) 
@@ -179,8 +179,8 @@ class GameScreen(game: Azurey) extends Screen {
       ship addAction(Actions.moveBy(0, getSpeed, 0.2f))
     if(Gdx.input.isKeyPressed(Keys.DOWN) || Gdx.input.isKeyPressed(Keys.S)) 
       ship addAction(Actions.moveBy(0, -getSpeed, 0.2f))
-    if(Gdx.input.isKeyPressed(Keys.SPACE) && shootDelay == 0){
-      shootDelay = 0.3f;
+  }
+    if(Gdx.input.isKeyPressed(Keys.SPACE)){
       if(pauseGame){
         restartGame
         pauseGame = false;
