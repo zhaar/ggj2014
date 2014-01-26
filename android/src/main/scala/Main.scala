@@ -12,6 +12,6 @@ class Main extends AndroidApplication {
     config.useWakelock = true
     config.hideStatusBar = true
     config.useGL20 = true
-    initialize(new ScrollerGame, config)
+    initialize(new Azurey, config)
   }
 }
