@@ -40,6 +40,10 @@ class GameScreen(game: Azurey) extends Screen {
   var bulletSpeed = 2f
   var pauseGame = false
   var accelerated = false
+  var level = 0
+  def currentLevel = MathUtils.floor(elapsed/10)
+  
+  
   
   val timer = new Label("", new LabelStyle(font, Color.WHITE))
   lazy val font = new BitmapFont(
@@ -92,8 +96,38 @@ class GameScreen(game: Azurey) extends Screen {
       }
     }
     timer setText((((elapsed * 100 ).toInt)/100f).toString)
+    println(currentLevel)
+    if(level < currentLevel){
+      println("nextLevel")
+      level = currentLevel
+      nextLevel(level)
+    }
     
     scene
+  }
+  
+  def nextLevel(level: Int){
+    val array = new Array(level)
+    for(i <- 0 until level){
+      val arrow = new Image(new Texture("art/" + selectArrow))
+      arrow.setPosition(1280, 0)
+      arrow.addAction(Actions.sequence(Actions.delay(i, Actions.moveBy(-1500, 0, 1 - 1/(1+i))), Actions.removeActor()))
+      stage.addActor(arrow)
+    }
+  }
+  
+  def selectArrow():String = {
+     val rand = Math.floor(Math.random() * 8)
+         rand match{
+       case 0 => "arrBlue.png"
+       case 1 => "arrOrange.png"
+       case 2 => "arrBlack.png"
+       case 3 => "arrYellow.png"
+       case 4 => "arrLime.png"
+       case 5 => "arrLightBlue.png"
+       case 6 => "arrPurple.png"
+       case 7 => "arrgreen.png"
+     }
   }
   
   def getWave(amplitude: Float, waveLength: Float, phase: Float, x: Float): Float = (MathUtils.sin(x * 2f * MathUtils.PI * waveLength + phase) + 1 ) * amplitude
