@@ -96,7 +96,6 @@ class GameScreen(game: Azurey) extends Screen {
       }
     }
     timer setText((((elapsed * 100 ).toInt)/100f).toString)
-    println(currentLevel)
     if(level < currentLevel){
       println("nextLevel")
       level = currentLevel
@@ -117,16 +116,15 @@ class GameScreen(game: Azurey) extends Screen {
   }
   
   def selectArrow():String = {
-     val rand = Math.floor(Math.random() * 8)
+     val rand = Math.floor(Math.random() * 7)
          rand match{
        case 0 => "arrBlue.png"
        case 1 => "arrOrange.png"
-       case 2 => "arrBlack.png"
-       case 3 => "arrYellow.png"
-       case 4 => "arrLime.png"
-       case 5 => "arrLightBlue.png"
-       case 6 => "arrPurple.png"
-       case 7 => "arrgreen.png"
+       case 2 => "arrYellow.png"
+       case 3 => "arrLime.png"
+       case 4 => "arrLightBlue.png"
+       case 5 => "arrPurple.png"
+       case 6 => "arrgreen.png"
      }
   }
   
