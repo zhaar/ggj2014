@@ -271,7 +271,7 @@ class GameScreen(game: Azurey) extends Screen {
 
       def show() = {
           val mainMusic = Gdx.audio.newMusic(Gdx.files.internal("art/16 - Anna.mp3"))
-              mainMusic.setVolume(0.5f)
+              mainMusic.setVolume(0.3f)
               mainMusic.setLooping(true)
               mainMusic.play()
               stage addActor ship
